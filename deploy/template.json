@@ -168,7 +168,28 @@
                 "detailedErrorLoggingEnabled": false,
                 "publishingUsername": "$azure-cost-reporter",
                 "publishingPassword": null,
-                "appSettings": null,
+                "appSettings": [
+                    {
+                        "name": "TARGET_TENANT",
+                        "value": "[parameters('target_tenant')]"
+                    },
+                    {
+                        "name": "TARGET_SUBSCRIPTIONS_JARRAY",
+                        "value": "[parameters('target_subscriptions')]"
+                    },
+                    {
+                        "name": "APP_ID",
+                        "value": "[parameters('management_app_id')]"
+                    },
+                    {
+                        "name": "APP_SECRET",
+                        "value": "[parameters('management_app_secret')]"
+                    },
+                    {
+                        "name": "SLACK_WEBHOOK",
+                        "value": "[parameters('slack_webhook')]"
+                    }
+                ],
                 "azureStorageAccounts": {},
                 "metadata": null,
                 "connectionStrings": null,
