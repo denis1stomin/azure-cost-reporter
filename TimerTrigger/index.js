@@ -24,8 +24,8 @@ const authorityUrl = authorityHostUrl + '/' + tenant;
 const applicationId = getParameter('APP_ID');
 const clientSecret = getParameter('APP_SECRET');
 const resource = 'https://management.azure.com';
-const WEBHOOK_PATH = getParameter('SLACK_WEBHOOK');
-const WEBHOOK_CHANNEL = process.env['SLACK_CHANNEL'];
+const WEBHOOK_TOKEN = getParameter('SLACK_TOKEN');
+const WEBHOOK_CHANNEL = getParameter('SLACK_CHANNEL');
 
 let requestsCounter = 0;
 let resultData = {};
@@ -38,7 +38,7 @@ const CostManagementClient = Axios.create({
     }
 });
 const SlackClient = Axios.create({
-    baseURL: 'https://hooks.slack.com/services',
+    baseURL: 'https://slack.com/api/chat.postMessage',
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -82,17 +82,17 @@ const postIfReady = () => {
                 slackMsg = slackMsg + text + '\n';
             });
 
-            SlackClient.post(WEBHOOK_PATH, {
+            SlackClient.post('/', {
                     text: slackMsg,
-                    username: "Azure cost reporter",
-                    channel: WEBHOOK_CHANNEL
+                    username: 'Azure cost reporter',
+                    icon_emoji: ':male-mage:',
+                    channel: WEBHOOK_CHANNEL,
+                    token: WEBHOOK_TOKEN
                 })
                 .then(resp => {
-                    //exit();
                 })
                 .catch(err => {
                     console.log('post slack', err.response.status);
-                    //exit();
                 });
         }
 };
