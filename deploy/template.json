@@ -35,7 +35,10 @@
         "management_app_secret": {
             "type": "string"
         },
-        "slack_webhook": {
+        "slack_token": {
+            "type": "string"
+        },
+        "slack_channel": {
             "type": "string"
         }
     },
@@ -186,8 +189,12 @@
                         "value": "[parameters('management_app_secret')]"
                     },
                     {
-                        "name": "SLACK_WEBHOOK",
-                        "value": "[parameters('slack_webhook')]"
+                        "name": "SLACK_TOKEN",
+                        "value": "[parameters('slack_token')]"
+                    },
+                    {
+                        "name": "SLACK_CHANNEL",
+                        "value": "[parameters('slack_channel')]"
                     }
                 ],
                 "azureStorageAccounts": {},
