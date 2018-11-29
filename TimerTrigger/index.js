@@ -65,8 +65,36 @@ const getTimePeriod = () => {
     };
 };
 
+const getBotNameAndIcon = () => {
+    const nowDate = new Date();
+    const month = nowDate.getUTCMonth();
+    const day = nowDate.getUTCDay();
+
+    // New Year
+    if ((month == 12 && day >= 25) || (month == 1 && day <= 3)) {
+        return {
+            username: 'Azure Santa',
+            icon_emoji: ':santa:'
+        };
+    }
+
+    // Chinese New Year
+    if ((month == 1 && day >= 20) || (month == 2 && day <= 20)) {
+        return {
+            username: 'Azure Dragon',
+            icon_emoji: ':dragon:'
+        };
+    }
+
+    // Default mage
+    return {
+        username: 'Azure Mage',
+        icon_emoji: ':male_mage:'
+    };
+};
+
 const postIfReady = () => {
-        // it means that all subscriptions are handled properly.
+        // the statement below means that all subscriptions are handled properly.
         if (requestsCounter == 2 * subscriptionsArray.length) {
             const date = new Date();
             let month = date.getUTCMonth() - 1;
@@ -82,13 +110,18 @@ const postIfReady = () => {
                 slackMsg = slackMsg + text + '\n';
             });
 
-            SlackClient.post(WEBHOOK_PATH, {
-                    text: slackMsg,
-                    parse: 'full',
-                    username: 'Azure Mage',
-                    icon_emoji: ':male_mage:',
-                    channel: WEBHOOK_CHANNEL
-                })
+            // prepare slack message and send it
+            const botIconAndName = getBotNameAndIcon();
+            let slackPayload = {
+                text: slackMsg,
+                parse: 'full',
+                ...botIconAndName
+            };
+            if (WEBHOOK_CHANNEL) {
+                slackPayload.channel = WEBHOOK_CHANNEL;
+            }
+
+            SlackClient.post(WEBHOOK_PATH, slackPayload)
                 .then(resp => {
                 })
                 .catch(err => {
