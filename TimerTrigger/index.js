@@ -74,7 +74,7 @@ const postIfReady = () => {
                 month = 12;
             }
             const dateString = `${MONTH_NAMES[month]} ${date.getUTCFullYear()}`;
-            let slackMsg = `Hey @here and there! This is your Azure cost report for \`${dateString}\`\n`;
+            let slackMsg = `Hey @here and there! This is your Azure costs for \`${dateString}\`\n`;
 
             subscriptionsArray.forEach(sub => {
                 const selector = sub.split('-').join('');
@@ -84,7 +84,8 @@ const postIfReady = () => {
 
             SlackClient.post(WEBHOOK_PATH, {
                     text: slackMsg,
-                    username: 'Azure cost reporter',
+                    parse: 'full',
+                    username: 'Azure Mage',
                     icon_emoji: ':male_mage:',
                     channel: WEBHOOK_CHANNEL
                 })
