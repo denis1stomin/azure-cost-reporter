@@ -51,7 +51,6 @@ const getTimePeriod = () => {
     const now = new Date();
     let date = new Date(Date.UTC(
         now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0) - 1);
-    date.setMilliseconds(999);
     const toDate = date.toISOString();
 
     date = new Date(Date.UTC(
@@ -67,7 +66,7 @@ const getTimePeriod = () => {
 
 const getBotNameAndIcon = () => {
     const nowDate = new Date();
-    const month = nowDate.getUTCMonth();
+    const month = nowDate.getUTCMonth() + 1;
     const day = nowDate.getUTCDay();
 
     // New Year
@@ -96,12 +95,10 @@ const getBotNameAndIcon = () => {
 const postIfReady = () => {
         // the statement below means that all subscriptions are handled properly.
         if (requestsCounter == 2 * subscriptionsArray.length) {
-            const date = new Date();
-            let month = date.getUTCMonth() - 1;
-            if (month == 0) {
-                month = 12;
-            }
-            const dateString = `${MONTH_NAMES[month]} ${date.getUTCFullYear()}`;
+            const now = new Date();
+            const date = new Date(Date.UTC(
+                now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0) - 1);
+            const dateString = `${MONTH_NAMES[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
             let slackMsg = `Hey @here and there! This is your Azure costs for \`${dateString}\`\n`;
 
             subscriptionsArray.forEach(sub => {
@@ -112,6 +109,7 @@ const postIfReady = () => {
 
             // prepare slack message and send it
             const botIconAndName = getBotNameAndIcon();
+            console.log(botIconAndName);
             let slackPayload = {
                 text: slackMsg,
                 parse: 'full',
@@ -208,7 +206,9 @@ const doTheJob = () => {
     });
 };
 
+doTheJob();
 
-module.exports = async function (context, myTimer) {
-    doTheJob();
-};
+
+//module.exports = async function (context, myTimer) {
+//    doTheJob();
+//};
