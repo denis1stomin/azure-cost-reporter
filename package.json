@@ -1,28 +1,28 @@
 {
-    "name": "azure-cost-reporter",
-    "version": "0.8.0",
-    "description": "Simple Azure app which reports resource consumption cost for a subscription",
-    "main": "azure-cost-reporter.js",
-    "scripts": {},
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/github.com/todo.git"
-    },
-    "keywords": [
-      "azure",
-      "cost",
-      "consumption",
-      "report",
-      "billing"
-    ],
-    "author": "Denis Istomin",
-    "license": "MIT",
-    "bugs": {
-      "url": "https://github.com/github.com/todo/issues"
-    },
-    "homepage": "https://github.com/github.com/todo#readme",
-    "dependencies": {
-      "adal-node": "^0.1.28",
-      "axios": "^0.18.0"
-    }
+  "name": "azure-cost-reporter",
+  "version": "0.8.0",
+  "description": "Simple Azure app which reports resource consumption cost for a subscription",
+  "main": "azure-cost-reporter.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/github.com/todo.git"
+  },
+  "keywords": [
+    "azure",
+    "cost",
+    "consumption",
+    "report",
+    "billing"
+  ],
+  "author": "Denis Istomin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/github.com/todo/issues"
+  },
+  "homepage": "https://github.com/github.com/todo#readme",
+  "dependencies": {
+    "adal-node": "^0.1.28",
+    "axios": "^0.18.0"
+  }
 }
