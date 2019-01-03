@@ -206,9 +206,6 @@ const doTheJob = () => {
     });
 };
 
-doTheJob();
-
-
-//module.exports = async function (context, myTimer) {
-//    doTheJob();
-//};
+module.exports = async function (context, myTimer) {
+    doTheJob();
+};
