@@ -18,13 +18,13 @@ Now you need to deploy a function app instance and deploy the source code from t
 * `RGROUP=azure-cost-reporter` (resource group name)
 * `az group create --name $RGROUP --location eastus` (create resource group)
 * `UNIQUE_NAME=acr$RANDOM` (create unique name)
-* `az storage account create --name $UNIQUE_NAME --resource-group $RGROUP --sku Standard_LRS --kind StorageV2` (create storage account)
+* `az storage account create --name $UNIQUE_NAME -g $RGROUP --sku Standard_LRS --kind StorageV2` (create storage account)
 * `# az provider register --namespace Microsoft.Insights` (register appropriate provider if needed)
-* `az resource create --resource-group $RGROUP --resource-type "Microsoft.Insights/components" --name $UNIQUE_NAME-insights --properties "{\"Application_Type\":\"web\"}"` (create application insights instance)
+* `az resource create -g $RGROUP --resource-type "Microsoft.Insights/components" --name $UNIQUE_NAME-insights --properties "{\"Application_Type\":\"web\"}"` (create application insights instance)
 * `INSTR_KEY=<key here>` (InstrumentationKey value from previous command output)
 * `GITREPO=https://github.com/denis1stomin/azure-cost-reporter.git`
-* `az functionapp create --resource-group $RGROUP --name $UNIQUE_NAME-app --storage-account $UNIQUE_NAME --runtime node --app-insights $UNIQUE_NAME-insights --app-insights-key $INSTR_KEY -c eastus -u "$GITREPO"` (create function app)
-* `# az functionapp deployment source sync --resource-group $RGROUP --name $UNIQUE_NAME-app` (manually synchronize function source code if this git repo is updated)
+* `az functionapp create -g $RGROUP --name $UNIQUE_NAME-app --storage-account $UNIQUE_NAME --runtime node --app-insights $UNIQUE_NAME-insights --app-insights-key $INSTR_KEY -c eastus -u "$GITREPO"` (create function app)
+* `# az functionapp deployment source sync -g $RGROUP --name $UNIQUE_NAME-app` (manually synchronize function source code if this git repo is updated)
 
 Finally you need to set a few important settings for the app.
 * `az functionapp config appsettings set --settings "APP_ID=$APP_ID" "APP_SECRET=$APP_SECRET" -n $UNIQUE_NAME-app -g $RGROUP` (service principal credential)
