@@ -6,7 +6,7 @@ Simple open source Azure Function app which monthly reports costs for a list of 
 ## How to deploy the app using Azure CLI on Linux or Portal
 
 First you need to create a service principal and assign "Cost Management Reader" role to it for a number of interesting azure subscriptions which you want to get cost reports for. Default azure-cli subscription is used in the example below. But you can set any subscription you want to monitor.
-* `az ad sp create-for-rbac --name azure-cost-reporter --skip-assignment`
+* `az ad sp create-for-rbac --name azure-cost-reporter --skip-assignment` (create service principal (aka app registration))
 * `APP_ID=<appId>` (get this value from the previous command output)
 * `APP_SECRET=<password>` (get this value from the previous command output)
 * `# az account show | grep "id"` (find id of your current default subscription)
