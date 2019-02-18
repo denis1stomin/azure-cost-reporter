@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "target_tenant": {
+            "value": "some tenant id"
+        },
+        "management_app_id": {
+            "value": "some app id"
+        },
+        "management_app_secret": {
+            "value": "some app secret"
+        },
+        "slack_webhook": {
+            "value": "some webhook"
+        }
+    }
+}

@@ -3,7 +3,7 @@
 Simple open source Azure Function app which monthly reports costs for a list of Azure subscriptions to a Slack channel. The application uses Azure Subscription Cost API to retrieve Azure subscription consumption data. It is a good sample application which can be easily customized according to your needs :)
 
 
-## How to deploy the app using Azure CLI on Linux or Portal
+## How to deploy the app using Azure CLI in Linux or Cloud Shell environment
 
 First you need to create a service principal and assign "Cost Management Reader" role to it for a number of interesting azure subscriptions which you want to get cost reports for. Default azure-cli subscription is used in the example below. But you can set any subscription you want to monitor.
 * `az ad sp create-for-rbac --name azure-cost-reporter --skip-assignment` (create service principal (aka app registration))
