@@ -18,10 +18,6 @@
             "defaultValue": "web",
             "type": "string"
         },
-        "azure_dns_binding": {
-            "defaultValue": "itss-cost-reporter.azurewebsites.net",
-            "type": "string"
-        },
         "target_tenant": {
             "type": "string"
         },
@@ -272,21 +268,6 @@
                 "minTlsVersion": "1.2",
                 "ftpsState": "AllAllowed",
                 "reservedInstanceCount": 0
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('cost_reporter_appname'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/hostNameBindings",
-            "name": "[concat(parameters('cost_reporter_appname'), '/', parameters('azure_dns_binding'))]",
-            "apiVersion": "2016-08-01",
-            "location": "[resourceGroup().location]",
-            "scale": null,
-            "properties": {
-                "siteName": "[concat('itss-cost-reporter-', uniqueString(subscription().subscriptionId))]",
-                "domainId": null,
-                "hostNameType": "Verified"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', parameters('cost_reporter_appname'))]"
