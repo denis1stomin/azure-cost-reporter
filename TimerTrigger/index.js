@@ -92,6 +92,18 @@ const getBotNameAndIcon = () => {
     };
 };
 
+const logApiErrorAndExit = (message, errObj) => {
+    console.log(message);
+    if (errObj) {
+        if (errObj.response)
+            console.log(errObj.response.status);
+        else
+            console.log(errObj);
+    }
+
+    process.exit(2);
+};
+
 const postIfReady = () => {
         // the statement below means that all subscriptions are handled properly.
         if (requestsCounter == 2 * subscriptionsArray.length) {
@@ -123,7 +135,7 @@ const postIfReady = () => {
                 .then(resp => {
                 })
                 .catch(err => {
-                    console.log('post slack', err.response.status);
+                    logApiErrorAndExit('Failed to post the slack message', err);
                 });
         }
 };
@@ -166,8 +178,7 @@ const handleSubscription = (subscription, accessToken) => {
         postIfReady();
     })
     .catch(err => {
-        console.log("Hm, I can't get billing data", err);
-        console.log("Hm, I can't get billing data", err.response.status);
+        logApiErrorAndExit('Cannot get billing data', err);
     });
 
     CostManagementClient.get(
@@ -188,8 +199,7 @@ const handleSubscription = (subscription, accessToken) => {
         postIfReady();
     })
     .catch(err => {
-        console.log("Oh, I can't get subscription name", err);
-        console.log("Oh, I can't get subscription name", err.response.status);
+        logApiErrorAndExit('Cannot get subscription name', err);
     });
 };
 
@@ -197,7 +207,7 @@ const doTheJob = () => {
     context.acquireTokenWithClientCredentials(
         resource, applicationId, clientSecret, function(err, tokenResp) {
         if (err) {
-            console.log("Well, I can't get the token: " + err.stack);
+            logApiErrorAndExit('Cannot get the token', err.stack);
         } else {
             subscriptionsArray.forEach((subscription) => {
                 handleSubscription(subscription, tokenResp.accessToken);
