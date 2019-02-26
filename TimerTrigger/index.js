@@ -67,10 +67,10 @@ const getTimePeriod = () => {
 const getBotNameAndIcon = () => {
     const nowDate = new Date();
     const month = nowDate.getUTCMonth() + 1;
-    const day = nowDate.getUTCDay();
+    const day = nowDate.getUTCDate();
 
     // New Year
-    if ((month == 12 && day >= 25) || (month == 1 && day <= 3)) {
+    if (((month == 12) && (day >= 25)) || ((month == 1) && (day <= 3))) {
         return {
             username: 'Azure Santa',
             icon_emoji: ':santa:'
@@ -78,10 +78,18 @@ const getBotNameAndIcon = () => {
     }
 
     // Chinese New Year
-    if ((month == 1 && day >= 20) || (month == 2 && day <= 20)) {
+    if (((month == 1) && (day >= 20)) || ((month == 2) && (day <= 20))) {
         return {
             username: 'Azure Dragon',
             icon_emoji: ':dragon:'
+        };
+    }
+
+    // Rio Carnilval
+    if ((month == 3) && (day <= 9)) {
+        return {
+            username: 'Azure Rio Dancers',
+            icon_emoji: ':dancers:'
         };
     }
 
@@ -90,6 +98,19 @@ const getBotNameAndIcon = () => {
         username: 'Azure Mage',
         icon_emoji: ':male_mage:'
     };
+};
+
+const logApiErrorAndExit = (message, errObj) => {
+    console.log(message);
+    if (errObj) {
+        if (errObj.response)
+            console.log(errObj.response.status);
+        else
+            console.log(errObj);
+    }
+
+    // Azure Function App marks only exit-code 1 as a failed run.
+    process.exit(1);
 };
 
 const postIfReady = () => {
@@ -123,7 +144,7 @@ const postIfReady = () => {
                 .then(resp => {
                 })
                 .catch(err => {
-                    console.log('post slack', err.response.status);
+                    logApiErrorAndExit('Failed to post the slack message', err);
                 });
         }
 };
@@ -166,8 +187,7 @@ const handleSubscription = (subscription, accessToken) => {
         postIfReady();
     })
     .catch(err => {
-        console.log("Hm, I can't get billing data", err);
-        console.log("Hm, I can't get billing data", err.response.status);
+        logApiErrorAndExit('Cannot get billing data', err);
     });
 
     CostManagementClient.get(
@@ -188,8 +208,7 @@ const handleSubscription = (subscription, accessToken) => {
         postIfReady();
     })
     .catch(err => {
-        console.log("Oh, I can't get subscription name", err);
-        console.log("Oh, I can't get subscription name", err.response.status);
+        logApiErrorAndExit('Cannot get subscription name', err);
     });
 };
 
@@ -197,7 +216,7 @@ const doTheJob = () => {
     context.acquireTokenWithClientCredentials(
         resource, applicationId, clientSecret, function(err, tokenResp) {
         if (err) {
-            console.log("Well, I can't get the token: " + err.stack);
+            logApiErrorAndExit('Cannot get the token', err.stack);
         } else {
             subscriptionsArray.forEach((subscription) => {
                 handleSubscription(subscription, tokenResp.accessToken);

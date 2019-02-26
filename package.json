@@ -3,7 +3,9 @@
   "version": "0.8.0",
   "description": "Simple Azure app which reports resource consumption cost for a subscription",
   "main": "azure-cost-reporter.js",
-  "scripts": {},
+  "scripts": {
+    "start": "nodejs localrunner.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/github.com/todo.git"

@@ -39,9 +39,11 @@ Now you need to create a function app instance and deploy the source code from t
 Finally you need to set a few important settings for the app.
 * `az functionapp config appsettings set --settings "APP_ID=$APP_ID" "APP_SECRET=$APP_SECRET" -n $UNIQUE_NAME-app -g $RGROUP` (service principal credential for the app to authorize)
 * `az account show | grep "tenantId"` (find tenant id)
-* `az functionapp config appsettings set --settings "TARGET_TENANT=<tenantId>" -n $UNIQUE_NAME-app -g $RGROUP` (azure tenant id for the app to authorize)
+* `TENANT_ID=<tenantId>`
+* `az functionapp config appsettings set --settings "TARGET_TENANT=$TENANT_ID" -n $UNIQUE_NAME-app -g $RGROUP` (azure tenant id for the app to authorize)
 * `az functionapp config appsettings set --settings "TARGET_SUBSCRIPTIONS_JARRAY=[\"$SUBSCRIPTION_ID\"]" -n $UNIQUE_NAME-app -g $RGROUP` (list of interesting subscription IDs to monitor)
-* `az functionapp config appsettings set --settings "SLACK_WEBHOOK=<webhook>" -n $UNIQUE_NAME-app -g $RGROUP` (slack webhook URI to post the report)
+* `SLACK_WEBHOOK=<slack webhook>`
+* `az functionapp config appsettings set --settings "SLACK_WEBHOOK=$SLACK_WEBHOOK" -n $UNIQUE_NAME-app -g $RGROUP` (slack webhook URI to post the report)
 * `az functionapp config appsettings set --settings "SLACK_CHANNEL=<slack channel>" -n $UNIQUE_NAME-app -g $RGROUP` (slack channel id or #public-name to use instead of the webhook default channel)
 
 Enjoy the app! :)
