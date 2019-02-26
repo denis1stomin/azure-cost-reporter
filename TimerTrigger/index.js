@@ -67,10 +67,10 @@ const getTimePeriod = () => {
 const getBotNameAndIcon = () => {
     const nowDate = new Date();
     const month = nowDate.getUTCMonth() + 1;
-    const day = nowDate.getUTCDay();
+    const day = nowDate.getUTCDate();
 
     // New Year
-    if ((month == 12 && day >= 25) || (month == 1 && day <= 3)) {
+    if (((month == 12) && (day >= 25)) || ((month == 1) && (day <= 3))) {
         return {
             username: 'Azure Santa',
             icon_emoji: ':santa:'
@@ -78,10 +78,18 @@ const getBotNameAndIcon = () => {
     }
 
     // Chinese New Year
-    if ((month == 1 && day >= 20) || (month == 2 && day <= 20)) {
+    if (((month == 1) && (day >= 20)) || ((month == 2) && (day <= 20))) {
         return {
             username: 'Azure Dragon',
             icon_emoji: ':dragon:'
+        };
+    }
+
+    // Rio Carnilval
+    if ((month == 3) && (day <= 9)) {
+        return {
+            username: 'Azure Rio Dancers',
+            icon_emoji: ':dancers:'
         };
     }
 
@@ -101,7 +109,8 @@ const logApiErrorAndExit = (message, errObj) => {
             console.log(errObj);
     }
 
-    process.exit(2);
+    // Azure Function App marks only exit-code 1 as a failed run.
+    process.exit(1);
 };
 
 const postIfReady = () => {
