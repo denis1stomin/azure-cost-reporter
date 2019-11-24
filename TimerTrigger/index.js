@@ -19,13 +19,15 @@ const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
 
 const authorityHostUrl = 'https://login.windows.net';
 const tenant = getParameter('TARGET_TENANT');
-const subscriptionsArray = JSON.parse(getParameter('TARGET_SUBSCRIPTIONS_JARRAY'));
 const authorityUrl = authorityHostUrl + '/' + tenant;
 const applicationId = getParameter('APP_ID');
 const clientSecret = getParameter('APP_SECRET');
 const resource = 'https://management.azure.com';
 const WEBHOOK_PATH = getParameter('SLACK_WEBHOOK');
 const WEBHOOK_CHANNEL = process.env['SLACK_CHANNEL'];
+
+const strSubscriptionsArray = getParameter('TARGET_SUBSCRIPTIONS_JARRAY');
+const subscriptionsArray = strSubscriptionsArray ? JSON.parse(strSubscriptionsArray) : null;
 
 let requestsCounter = 0;
 let resultData = {};
@@ -218,9 +220,14 @@ const doTheJob = () => {
         if (err) {
             logApiErrorAndExit('Cannot get the token', err.stack);
         } else {
-            subscriptionsArray.forEach((subscriptionId) => {
-                handleSubscription({ id: subscriptionId }, tokenResp.accessToken);
-            });
+            if (subscriptionsArray) {
+                subscriptionsArray.forEach((subscriptionId) => {
+                    handleSubscription({ id: subscriptionId }, tokenResp.accessToken);
+                });
+            }
+            else {
+                // nothing yet
+            }
         }
     });
 };
