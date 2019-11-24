@@ -120,7 +120,7 @@ const postIfReady = () => {
             const date = new Date(Date.UTC(
                 now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0) - 1);
             const dateString = `${MONTH_NAMES[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-            let slackMsg = `Hey @here and there! This is your Azure costs for \`${dateString}\`\n`;
+            let slackMsg = `Hey there! This is your Azure costs for \`${dateString}\`\n`;
 
             subscriptionsArray.forEach(sub => {
                 const selector = sub.split('-').join('');
@@ -151,7 +151,7 @@ const postIfReady = () => {
 
 const handleSubscription = (subscription, accessToken) => {
     CostManagementClient.post(
-        `/subscriptions/${subscription}/providers/Microsoft.CostManagement/query?api-version=2018-08-31`,
+        `/subscriptions/${subscription.id}/providers/Microsoft.CostManagement/query?api-version=2018-08-31`,
         {
             type: 'Usage',
             timeframe: 'Custom',
@@ -178,7 +178,7 @@ const handleSubscription = (subscription, accessToken) => {
             value = resp.data.properties.rows[0];
         }
 
-        const selector = subscription.split('-').join('');
+        const selector = subscription.id.split('-').join('');
         if (!resultData[selector]) {
             resultData[selector] = {};
         }
@@ -191,7 +191,7 @@ const handleSubscription = (subscription, accessToken) => {
     });
 
     CostManagementClient.get(
-        `/subscriptions/${subscription}?api-version=2016-06-01`,
+        `/subscriptions/${subscription.id}?api-version=2016-06-01`,
         {
             headers: {
                 Authorization: `Bearer ${accessToken}`
@@ -199,7 +199,7 @@ const handleSubscription = (subscription, accessToken) => {
         }
     )
     .then(resp => {
-        const selector = subscription.split('-').join('');
+        const selector = subscription.id.split('-').join('');
         if (!resultData[selector]) {
             resultData[selector] = {};
         }
@@ -218,8 +218,8 @@ const doTheJob = () => {
         if (err) {
             logApiErrorAndExit('Cannot get the token', err.stack);
         } else {
-            subscriptionsArray.forEach((subscription) => {
-                handleSubscription(subscription, tokenResp.accessToken);
+            subscriptionsArray.forEach((subscriptionId) => {
+                handleSubscription({ id: subscriptionId }, tokenResp.accessToken);
             });
         }
     });
