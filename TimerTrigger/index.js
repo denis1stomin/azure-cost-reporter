@@ -126,7 +126,7 @@ const postIfReady = (requestsCounterMax) => {
 
             Object.keys(resultData).forEach(sub => {
                 const selector = sub.split('-').join('');
-                const linkUrl = `https://portal.azure.com/#${resultData[selector]['tenant']}/resource/subscriptions/${resultData[selector]['id']}/overview`;
+                const linkUrl = `https://portal.azure.com/`;    // TODO : link to a corresponding subscription
                 const text = `<${linkUrl}|${resultData[selector]['name']}> : \`${resultData[selector]['cost']}\``;
                 slackMsg = slackMsg + text + '\n';
             });
@@ -192,12 +192,6 @@ const handleSubscription = (subscription, subscriptionsCount, accessToken) => {
         resultData[selector]['cost'] = Number.parseFloat(value[0]).toFixed(2) + ' ' + value[1];
         if (subscription.displayName) {
             resultData[selector]['name'] = subscription.displayName;
-        }
-        if (subscription.tenantId) {
-            resultData[selector]['tenant'] = subscription.tenantId;
-        }
-        if (subscription.displayName) {
-            resultData[selector]['id'] = subscription.subscriptionId;
         }
 
         requestsCounter = requestsCounter + 1;
