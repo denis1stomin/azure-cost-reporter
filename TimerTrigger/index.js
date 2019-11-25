@@ -124,11 +124,10 @@ const postIfReady = (requestsCounterMax) => {
             const dateString = `${MONTH_NAMES[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
             let slackMsg = `Hey there! This is your Azure costs for \`${dateString}\`\n`;
 
-            console.log(resultData);
-
             Object.keys(resultData).forEach(sub => {
                 const selector = sub.split('-').join('');
-                const text = `${resultData[selector]['name']} : \`${resultData[selector]['cost']}\``;
+                const linkUrl = `https://portal.azure.com/#${resultData[selector]['tenant']}/resource/subscriptions/${resultData[selector]['id']}/overview`;
+                const text = `<${linkUrl}|${resultData[selector]['name']}> : \`${resultData[selector]['cost']}\``;
                 slackMsg = slackMsg + text + '\n';
             });
 
@@ -137,7 +136,6 @@ const postIfReady = (requestsCounterMax) => {
 
             let slackPayload = {
                 text: slackMsg,
-                parse: 'full',
                 ...botIconAndName
             };
             if (WEBHOOK_CHANNEL) {
@@ -195,6 +193,12 @@ const handleSubscription = (subscription, subscriptionsCount, accessToken) => {
         if (subscription.displayName) {
             resultData[selector]['name'] = subscription.displayName;
         }
+        if (subscription.tenantId) {
+            resultData[selector]['tenant'] = subscription.tenantId;
+        }
+        if (subscription.displayName) {
+            resultData[selector]['id'] = subscription.subscriptionId;
+        }
 
         requestsCounter = requestsCounter + 1;
         postIfReady(2 * subscriptionsCount);
@@ -251,8 +255,6 @@ const doTheJob = () => {
                 )
                 .then(resp => {
                     requestsCounter = requestsCounter + resp.data.value.length;
-
-                    console.log(resp.data.value);
 
                     resp.data.value.forEach((subscription) => {
                         handleSubscription(subscription, resp.data.value.length, tokenResp.accessToken);
