@@ -19,13 +19,15 @@ const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
 
 const authorityHostUrl = 'https://login.windows.net';
 const tenant = getParameter('TARGET_TENANT');
-const subscriptionsArray = JSON.parse(getParameter('TARGET_SUBSCRIPTIONS_JARRAY'));
 const authorityUrl = authorityHostUrl + '/' + tenant;
 const applicationId = getParameter('APP_ID');
 const clientSecret = getParameter('APP_SECRET');
 const resource = 'https://management.azure.com';
 const WEBHOOK_PATH = getParameter('SLACK_WEBHOOK');
 const WEBHOOK_CHANNEL = process.env['SLACK_CHANNEL'];
+
+const strSubscriptionsArray = process.env['TARGET_SUBSCRIPTIONS_JARRAY'];
+const subscriptionsArray = strSubscriptionsArray ? JSON.parse(strSubscriptionsArray) : null;
 
 let requestsCounter = 0;
 let resultData = {};
@@ -113,27 +115,27 @@ const logApiErrorAndExit = (message, errObj) => {
     process.exit(1);
 };
 
-const postIfReady = () => {
+const postIfReady = (requestsCounterMax) => {
         // the statement below means that all subscriptions are handled properly.
-        if (requestsCounter == 2 * subscriptionsArray.length) {
+        if (requestsCounter >= requestsCounterMax) {
             const now = new Date();
             const date = new Date(Date.UTC(
                 now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0) - 1);
             const dateString = `${MONTH_NAMES[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-            let slackMsg = `Hey @here and there! This is your Azure costs for \`${dateString}\`\n`;
+            let slackMsg = `Hey there! This is your Azure costs for \`${dateString}\`\n`;
 
-            subscriptionsArray.forEach(sub => {
+            Object.keys(resultData).forEach(sub => {
                 const selector = sub.split('-').join('');
-                const text = `${resultData[selector]['name']} : \`${resultData[selector]['cost']}\``;
+                const linkUrl = `https://portal.azure.com/`;    // TODO : link to a corresponding subscription
+                const text = `<${linkUrl}|${resultData[selector]['name']}> : \`${resultData[selector]['cost']}\``;
                 slackMsg = slackMsg + text + '\n';
             });
 
             // prepare slack message and send it
             const botIconAndName = getBotNameAndIcon();
-            console.log(botIconAndName);
+
             let slackPayload = {
                 text: slackMsg,
-                parse: 'full',
                 ...botIconAndName
             };
             if (WEBHOOK_CHANNEL) {
@@ -149,9 +151,13 @@ const postIfReady = () => {
         }
 };
 
-const handleSubscription = (subscription, accessToken) => {
+const handlingGuidList = () => {
+    return subscriptionsArray;
+};
+
+const handleSubscription = (subscription, subscriptionsCount, accessToken) => {
     CostManagementClient.post(
-        `/subscriptions/${subscription}/providers/Microsoft.CostManagement/query?api-version=2018-08-31`,
+        `/subscriptions/${subscription.subscriptionId}/providers/Microsoft.CostManagement/query?api-version=2018-08-31`,
         {
             type: 'Usage',
             timeframe: 'Custom',
@@ -178,38 +184,47 @@ const handleSubscription = (subscription, accessToken) => {
             value = resp.data.properties.rows[0];
         }
 
-        const selector = subscription.split('-').join('');
+        const selector = subscription.subscriptionId.split('-').join('');
         if (!resultData[selector]) {
             resultData[selector] = {};
         }
+        
         resultData[selector]['cost'] = Number.parseFloat(value[0]).toFixed(2) + ' ' + value[1];
+        if (subscription.displayName) {
+            resultData[selector]['name'] = subscription.displayName;
+        }
+
         requestsCounter = requestsCounter + 1;
-        postIfReady();
+        postIfReady(2 * subscriptionsCount);
     })
     .catch(err => {
         logApiErrorAndExit('Cannot get billing data', err);
     });
 
-    CostManagementClient.get(
-        `/subscriptions/${subscription}?api-version=2016-06-01`,
-        {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
+    // Need to resolve display names for all provided subscriptions GUIDs
+    if (handlingGuidList()) {
+        CostManagementClient.get(
+            `/subscriptions/${subscription.subscriptionId}?api-version=2016-06-01`,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
             }
-        }
-    )
-    .then(resp => {
-        const selector = subscription.split('-').join('');
-        if (!resultData[selector]) {
-            resultData[selector] = {};
-        }
-        resultData[selector]['name'] = resp.data.displayName;
-        requestsCounter = requestsCounter + 1;
-        postIfReady();
-    })
-    .catch(err => {
-        logApiErrorAndExit('Cannot get subscription name', err);
-    });
+        )
+        .then(resp => {
+            const selector = subscription.subscriptionId.split('-').join('');
+            if (!resultData[selector]) {
+                resultData[selector] = {};
+            }
+            resultData[selector]['name'] = resp.data.displayName;
+
+            requestsCounter = requestsCounter + 1;
+            postIfReady(2 * subscriptionsCount);
+        })
+        .catch(err => {
+            logApiErrorAndExit('Cannot get subscription name', err);
+        });
+    }
 };
 
 const doTheJob = () => {
@@ -218,9 +233,31 @@ const doTheJob = () => {
         if (err) {
             logApiErrorAndExit('Cannot get the token', err.stack);
         } else {
-            subscriptionsArray.forEach((subscription) => {
-                handleSubscription(subscription, tokenResp.accessToken);
-            });
+            if (handlingGuidList()) {
+                // The case when subscription GUIDs list is provided as the script argument
+                subscriptionsArray.forEach((id) => {
+                    handleSubscription({ subscriptionId: id }, subscriptionsArray.length, tokenResp.accessToken);
+                });
+            }
+            else {
+                // The case when the script needs to retrieve authorized subscriptions
+                CostManagementClient.get(`/subscriptions?api-version=2019-06-01`, {
+                        headers: {
+                            Authorization: `Bearer ${tokenResp.accessToken}`
+                        }
+                    }
+                )
+                .then(resp => {
+                    requestsCounter = requestsCounter + resp.data.value.length;
+
+                    resp.data.value.forEach((subscription) => {
+                        handleSubscription(subscription, resp.data.value.length, tokenResp.accessToken);
+                    });
+                })
+                .catch(err => {
+                    logApiErrorAndExit('Cannot get available subscriptions list', err);
+                });
+            }
         }
     });
 };
