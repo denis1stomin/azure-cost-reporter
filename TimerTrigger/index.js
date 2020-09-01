@@ -23,8 +23,9 @@ const authorityUrl = authorityHostUrl + '/' + tenant;
 const applicationId = getParameter('APP_ID');
 const clientSecret = getParameter('APP_SECRET');
 const resource = 'https://management.azure.com';
-const WEBHOOK_PATH = getParameter('SLACK_WEBHOOK');
-const WEBHOOK_CHANNEL = process.env['SLACK_CHANNEL'];
+const SLACK_WEBHOOK = getParameter('SLACK_WEBHOOK');
+const SLACK_CHANNEL = process.env['SLACK_CHANNEL'];
+const TEAMS_WEBHOOK = getParameter('TEAMS_WEBHOOK');
 
 const strSubscriptionsArray = process.env['TARGET_SUBSCRIPTIONS_JARRAY'];
 const subscriptionsArray = strSubscriptionsArray ? JSON.parse(strSubscriptionsArray) : null;
@@ -39,8 +40,8 @@ const CostManagementClient = Axios.create({
         'Content-Type': 'application/json'
     }
 });
-const SlackClient = Axios.create({
-    baseURL: 'https://hooks.slack.com/services',
+const WebhookClient = Axios.create({
+    //baseURL: 'https://hooks.slack.com/services',
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -66,7 +67,7 @@ const getTimePeriod = () => {
     };
 };
 
-const getBotNameAndIcon = () => {
+const getSlackBotNameAndIcon = () => {
     const nowDate = new Date();
     const month = nowDate.getUTCMonth() + 1;
     const day = nowDate.getUTCDate();
@@ -102,6 +103,32 @@ const getBotNameAndIcon = () => {
     };
 };
 
+const resolveWebhookData = (textMsg) => {
+    let webhookUri = TEAMS_WEBHOOK;
+    let payload = {
+        text: textMsg
+    };
+
+    if (SLACK_WEBHOOK) {
+        webhookUri = SLACK_WEBHOOK;
+
+        const botIconAndName = getSlackBotNameAndIcon();
+        payload = {
+            text: textMsg,
+            ...botIconAndName
+        };
+
+        if (SLACK_CHANNEL) {
+            slackPayload.channel = SLACK_CHANNEL;
+        }
+    }
+
+    return {
+        webhookUri: webhookUri,
+        payload: payload
+    };
+};
+
 const logApiErrorAndExit = (message, errObj) => {
     console.log(message);
     if (errObj) {
@@ -122,31 +149,22 @@ const postIfReady = (requestsCounterMax) => {
             const date = new Date(Date.UTC(
                 now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0) - 1);
             const dateString = `${MONTH_NAMES[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-            let slackMsg = `Hey there! This is your Azure costs for \`${dateString}\`\n`;
+            let textMsg = `Hey there! This is your Azure costs for \`${dateString}\`\n`;
 
             Object.keys(resultData).forEach(sub => {
                 const selector = sub.split('-').join('');
                 const linkUrl = `https://portal.azure.com/`;    // TODO : link to a corresponding subscription
                 const text = `<${linkUrl}|${resultData[selector]['name']}> : \`${resultData[selector]['cost']}\``;
-                slackMsg = slackMsg + text + '\n';
+                textMsg = textMsg + text + '\n';
             });
 
-            // prepare slack message and send it
-            const botIconAndName = getBotNameAndIcon();
+            const webhookData = resolveWebhookData(textMsg);
 
-            let slackPayload = {
-                text: slackMsg,
-                ...botIconAndName
-            };
-            if (WEBHOOK_CHANNEL) {
-                slackPayload.channel = WEBHOOK_CHANNEL;
-            }
-
-            SlackClient.post(WEBHOOK_PATH, slackPayload)
+            WebhookClient.post(webhookData.webhookUri, webhookData.payload)
                 .then(resp => {
                 })
                 .catch(err => {
-                    logApiErrorAndExit('Failed to post the slack message', err);
+                    logApiErrorAndExit('Failed to post webhook message', err);
                 });
         }
 };
