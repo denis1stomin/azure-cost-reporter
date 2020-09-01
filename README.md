@@ -2,6 +2,13 @@
 
 Simple open source Azure Function app which monthly reports costs for a list of Azure subscriptions to a Slack channel. The application uses Azure Subscription Cost API to retrieve Azure subscription consumption data. It is a good sample NodeJS application which can be easily customized according to your needs :)
 
+## About parameters and configuration
+
+All parameters are provided via environment variables.
+Environment variables is built-in method of configuration of Azure Functions app.
+
+TEAMS_WEBHOOK, SLACK_WEBHOOK, SLACK_CHANNEL - webhook related parameters
+TARGET_TENANT, APP_ID, APP_SECRET - authentication related parameters
 
 ## How to deploy the application as Azure Function app
 
